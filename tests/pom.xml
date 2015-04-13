@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.intetics</groupId>
+    <artifactId>workshop-loadtests-search</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>Workshop-LoadTests-SearchWS</name>
+
+    <properties>
+        <jmeter.maven.plugin.version>1.10.0</jmeter.maven.plugin.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- include all JMeter tests by default -->
+                <tests.include>**/*.jmx</tests.include>
+                <!-- nothing excluded by default -->
+                <tests.exclude>none</tests.exclude>
+            </properties>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.lazerycode.jmeter</groupId>
+                <artifactId>jmeter-maven-plugin</artifactId>
+                <version>${jmeter.maven.plugin.version}</version>
+                <configuration>
+                    <!--
+                       By default the test results are saved in a file
+                       /target/jmeter/results/<testname>-<timestamp>.jtl
+                       Further processing is easier without timestamp though.
+                    -->
+                    <testResultsTimestamp>false</testResultsTimestamp>
+
+                    <!--
+                       To simplify debugging, it is advisable to adapt the loglevel.
+                       The jmeter logs are written to the file jmeter.log.
+                    -->
+                    <overrideRootLogLevel>DEBUG</overrideRootLogLevel>
+
+                    <!--
+                       By default, the console output during a jmeter test run is suppressed.
+                       We want to display the progress using the listener "Generate Summary Results"
+                       (which periodically prints stats to stdout). Therefore we have to make sure,
+                       that the jmeter output is not suppressed.
+                    -->
+                    <suppressJMeterOutput>false</suppressJMeterOutput>
+
+                    <!--
+                       If tests fail (e.g. a http-request running into a timeout), the corresponding maven
+                       goal also fails (and subsequent goals aren't executed anymore). We want to create graphs
+                       from test-results, no matter if some requests failed or not, so we ignore jmeter failures.
+                    -->
+                    <ignoreResultFailures>true</ignoreResultFailures>
+
+                    <!--
+                        User-defined variables
+                    -->
+                    <propertiesUser>
+                        <threads>${threads}</threads>
+                        <duration>${duration}</duration>
+                        <throughput>${throughput}</throughput>
+                    </propertiesUser>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>jmeter-tests</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jmeter</goal>
+                        </goals>
+                        <configuration>
+                            <testFilesIncluded>
+                                <jMeterTestFile>${tests.include}</jMeterTestFile>
+                            </testFilesIncluded>
+                            <testFilesExcluded>
+                                <excludeJMeterTestFile>${tests.exclude}</excludeJMeterTestFile>
+                            </testFilesExcluded>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
